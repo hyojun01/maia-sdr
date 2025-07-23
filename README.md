@@ -68,3 +68,27 @@ licensed under either of the
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 or the MIT license at your option. maia-kmod is licensed under the
 [GPL, version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+
+
+## hyojun command
+docker run --rm --net host -e DISPLAY=$DISPLAY -e TERM \
+	    --name=maia-sdr-devel --hostname=maia-sdr-devel \
+	    -v vivado2023_2:/opt/Xilinx -v maia_sdr_devel_home:/home \
+	    -v $HOME/workspace:/hdl \
+	    --ulimit "nofile=1024:1048576" \
+	    -it ghcr.io/maia-sdr/maia-sdr-devel
+	  
+	  
+source /opt/Xilinx/Vivado/2023.2/settings64.sh
+source /opt/rust/env
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin/:/usr/bin:/sbin:/bin:/opt/gcc-arm-linux-gnueabi/bin:$PATH:/opt/oss-cad-suite/bin
+
+
+iio_info -u ip:pluto.local -s
+iio_attr -u ip:pluto.local -c ad9361-phy
+iio_attr -u ip:pluto.local -d ad9361-phy
+iio_attr -u ip:pluto.local -c ad9361-phy altvoltage0
+iio_attr -u ip:pluto.local -d ad9361-phy ensm_mode
+
+iio_attr -c ad9361-phy altvoltage1 frequency 3500000000 
+iio_attr -o -c ad9361-phy voltage0 hardwaregain -10

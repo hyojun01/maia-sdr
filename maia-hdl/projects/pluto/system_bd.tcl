@@ -240,6 +240,7 @@ set_property -dict [list CONFIG.USE_PHASE_ALIGNMENT {false} CONFIG.ENABLE_CLOCK_
 
 # connections
 
+# connections with ad936x RFIC
 ad_connect  rx_clk_in axi_ad9361/rx_clk_in
 ad_connect  rx_frame_in axi_ad9361/rx_frame_in
 ad_connect  rx_data_in axi_ad9361/rx_data_in
@@ -265,6 +266,12 @@ ad_connect  sys_cpu_reset maia_sdr/s_axi_lite_rst
 ad_connect  maia_sdr_clk/clk_out1 maia_sdr/clk
 ad_connect  maia_sdr_clk/clk_out2 maia_sdr/clk2x_clk
 ad_connect  maia_sdr_clk/clk_out3 maia_sdr/clk3x_clk
+
+# connections tx logic
+# ad_connect  axi_ad9361/adc_data_i0 axi_ad9361/dac_data_i0
+# ad_connect  axi_ad9361/adc_data_q0 axi_ad9361/dac_data_q0
+ad_connect maia_sdr/re_out axi_ad9361/dac_data_i0
+ad_connect maia_sdr/im_out axi_ad9361/dac_data_q0
 
 ad_connect  sys_cpu_clk maia_sdr_clk/clk_in1
 ad_connect  sys_cpu_reset maia_sdr_clk/reset
@@ -320,6 +327,7 @@ if {[info exists maia_iio]} {
 	ad_connect sys_cpu_resetn axi_ad9361_adc_dma/m_dest_axi_aresetn
 	ad_connect sys_cpu_resetn axi_ad9361_dac_dma/m_src_axi_aresetn
 }
+
 # interconnects
 
 ad_cpu_interconnect 0x79020000 axi_ad9361

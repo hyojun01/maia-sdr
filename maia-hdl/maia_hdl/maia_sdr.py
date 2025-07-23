@@ -223,6 +223,10 @@ class MaiaSDR(Elaboratable):
         self.re_in = Signal(self.iq_in_width)
         self.im_in = Signal(self.iq_in_width)
         self.interrupt_out = Signal()
+        # add tx logic
+        self.iq_out_width = 16
+        self.re_out = Signal(self.iq_out_width)
+        self.im_out = Signal(self.iq_out_width)
 
     def ports(self):
         return (
@@ -240,6 +244,9 @@ class MaiaSDR(Elaboratable):
                 self.sync.rst,
                 self.clk2x.clk,
                 self.clk3x.clk,
+                # add tx logic
+                self.re_out,
+                self.im_out,
             ]
         )
 
@@ -281,6 +288,21 @@ class MaiaSDR(Elaboratable):
             'sampling', 'sync', self.iq_in_width)
         m.d.comb += [rxiq_cdc.re_in.eq(self.re_in),
                      rxiq_cdc.im_in.eq(self.im_in)]
+        
+        # add tx logic
+        maiasdr_re_out = Signal(
+            self.iq_out_width, reset_less=True)
+        maiasdr_im_out = Signal(
+            self.iq_out_width, reset_less=True)
+        shift = self.iq_out_width - self.iq_in_width
+        m.d.sampling += [
+            maiasdr_re_out.eq(self.re_in << shift),
+            maiasdr_im_out.eq(self.im_in << shift),
+        ]
+        m.d.comb += [
+            self.re_out.eq(maiasdr_re_out),
+            self.im_out.eq(maiasdr_im_out),
+        ]
 
         # Spectrometer (sync domain)
         spectrometer_re_in = Signal(

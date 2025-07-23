@@ -241,6 +241,7 @@ impl IpCore {
             .await
             .context("failed to open maia-sdr-spectrometer DMA buffer")?;
         let interrupt_registers = Registers(mapping.clone());
+        // IpCore 객체 생성.
         let mut ip_core = IpCore {
             registers: Registers(mapping),
             phys_addr,
@@ -254,6 +255,7 @@ impl IpCore {
             ddc_enabled: false,
         };
 
+        // 상태 초기화
         ip_core.log_open().await?;
         ip_core.check_product_id()?;
         ip_core.set_sdr_reset(false);
@@ -330,6 +332,7 @@ impl IpCore {
     ///
     /// This register indicates the index of the last buffer to which the
     /// spectrometer has written.
+    /// 스펙트로미터 버퍼 가져오기??
     pub fn spectrometer_last_buffer(&self) -> usize {
         self.registers
             .spectrometer()
@@ -339,7 +342,9 @@ impl IpCore {
             .into()
     }
 
+    
     /// Gives the signal that is used as an input to the spectrometer.
+    /// 스펙트로미터 인풋이 어떤 것으로 설정되어 있는지??
     pub fn spectrometer_input(&self) -> maia_json::SpectrometerInput {
         self.spectrometer_input
     }
@@ -350,6 +355,7 @@ impl IpCore {
     /// This offset is relative to the AD9361 RX LO frequency. The offset is
     /// zero if the input is the AD9361, or the DDC frequency if the input is
     /// the DDC.
+    /// 스펙트로미터 인풋 주파수 오프셋이 어떤 것으로 설정되어 있는지??
     pub fn spectrometer_input_frequency_offset(&self) -> f64 {
         match self.spectrometer_input() {
             maia_json::SpectrometerInput::AD9361 => 0.0,
@@ -378,6 +384,7 @@ impl IpCore {
     /// Note: [`IpCore`] caches in RAM the value of this register every time
     /// that it is updated, so calls to this function are very fast because the
     /// FPGA register doesn't need to be accessed.
+    /// 얼마나 많은 FFT가 누적되는지??
     pub fn spectrometer_number_integrations(&self) -> u32 {
         self.spectrometer_integrations
     }
@@ -390,6 +397,7 @@ impl IpCore {
     /// Note: [`IpCore`] caches in RAM the value of this register every time
     /// that it is updated, so calls to this function are very fast because the
     /// FPGA register doesn't need to be accessed.
+    /// 스펙트로미터를 평균 전력으로 할지 피크 감지로 할지?
     pub fn spectrometer_mode(&self) -> maia_json::SpectrometerMode {
         self.spectrometer_mode
     }
@@ -490,6 +498,7 @@ impl IpCore {
     /// The `input_sampling_frequency` parameter indicates the sampling
     /// frequency of the source connected to the DDC input (typically the
     /// AD9361).
+    /// DDC config 확인하는 함수??
     pub fn ddc_config(&self, input_sampling_frequency: f64) -> maia_json::DDCConfig {
         let summary = self.ddc_config_summary(input_sampling_frequency);
         maia_json::DDCConfig {
@@ -622,6 +631,7 @@ impl IpCore {
     /// Gets the mixer frequency of the DDC.
     ///
     /// The frequency is given in units of Hz.
+    /// DDC의 믹서 주파수 반환하는 함수??
     pub fn ddc_frequency(&self) -> f64 {
         self.ddc_config.frequency
     }
@@ -682,6 +692,7 @@ impl IpCore {
     );
 
     /// Gives the decimation factor set in the DDC.
+    /// DDC의 decimation factor를 반환하는 함수??
     pub fn ddc_decimation(&self) -> usize {
         let mut decimation = usize::try_from(self.ddc_config.fir1.decimation).unwrap();
         if let Some(config) = &self.ddc_config.fir2 {
@@ -718,6 +729,7 @@ impl IpCore {
     /// Gives the value of the recorder mode register of the recorder.
     ///
     /// This register is used to select 8-bit mode or 12-bit mode.
+    /// recorder의 모드가 8-비트 모드인지 12-비트 모드인지???
     pub fn recorder_mode(&self) -> Result<maia_json::RecorderMode> {
         Ok(
             match self.registers.recorder_control().read().mode().bits() {
