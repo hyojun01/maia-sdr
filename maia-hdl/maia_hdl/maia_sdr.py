@@ -23,6 +23,8 @@ from .pluto_platform import PlutoPlatform
 from .register import Access, Field, Registers, Register, RegisterMap
 from .recorder import Recorder16IQ, RecorderMode
 from .spectrometer import Spectrometer
+from .fifo import AsyncFifo18_36
+from .tx_dump import TxDUMP
 
 # IP core version
 _version = '0.6.2'
@@ -227,6 +229,8 @@ class MaiaSDR(Elaboratable):
         self.iq_out_width = 16
         self.re_out = Signal(self.iq_out_width)
         self.im_out = Signal(self.iq_out_width)
+        self.valid_re = Signal()
+        self.valid_im = Signal()
 
     def ports(self):
         return (
@@ -247,6 +251,8 @@ class MaiaSDR(Elaboratable):
                 # add tx logic
                 self.re_out,
                 self.im_out,
+                self.valid_re,
+                self.valid_im,
             ]
         )
 
@@ -290,18 +296,24 @@ class MaiaSDR(Elaboratable):
                      rxiq_cdc.im_in.eq(self.im_in)]
         
         # add tx logic
-        maiasdr_re_out = Signal(
-            self.iq_out_width, reset_less=True)
-        maiasdr_im_out = Signal(
-            self.iq_out_width, reset_less=True)
+        shifted_re = Signal(
+            self.iq_out_width)
+        shifted_im = Signal(
+            self.iq_out_width)
         shift = self.iq_out_width - self.iq_in_width
-        m.d.sampling += [
-            maiasdr_re_out.eq(self.re_in << shift),
-            maiasdr_im_out.eq(self.im_in << shift),
-        ]
         m.d.comb += [
-            self.re_out.eq(maiasdr_re_out),
-            self.im_out.eq(maiasdr_im_out),
+            shifted_re.eq(self.re_in << shift),
+            shifted_im.eq(self.im_in << shift),
+        ]
+        m.submodules.tx_dump = tx_dump = TxDUMP(
+            'sampling', 'sampling', self.iq_out_width)
+        m.d.comb += [
+            tx_dump.re_in.eq(shifted_re),
+            tx_dump.im_in.eq(shifted_im),
+            tx_dump.valid_re.eq(self.valid_re),
+            tx_dump.valid_im.eq(self.valid_im),
+            self.re_out.eq(tx_dump.re_out),
+            self.im_out.eq(tx_dump.im_out),
         ]
 
         # Spectrometer (sync domain)
@@ -463,6 +475,10 @@ class MaiaSDR(Elaboratable):
                 ResetSignal(internal), o_domain=internal,
                 init=1))
         m.d.comb += rxiq_cdc.reset.eq(
+            self.control_registers['control']['sdr_reset'])
+        
+        # add tx logic
+        m.d.comb += tx_dump.reset.eq(
             self.control_registers['control']['sdr_reset'])
 
         # Interrupts (s_axi_lite domain)

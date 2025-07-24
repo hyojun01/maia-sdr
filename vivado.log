@@ -1,0 +1,49 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:13:54 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Thu Jul 24 07:25:16 2025
+# Process ID: 51
+# Current directory: /hdl/plutosdr-fw/maia-sdr
+# Command line: vivado
+# Log file: /hdl/plutosdr-fw/maia-sdr/vivado.log
+# Journal file: /hdl/plutosdr-fw/maia-sdr/vivado.jou
+# Running On: maia-sdr-devel, OS: Linux, CPU Frequency: 3000.000 MHz, CPU Physical cores: 16, Host memory: 15787 MB
+#-----------------------------------------------------------
+start_gui
+open_project /hdl/plutosdr-fw/maia-sdr/maia-hdl/projects/pluto/pluto.xpr
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:vek280_es:part0:1.0 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/vek280/es/rev_a/1.0/board.xml as part xcve2802-vsvh1760-2lp-e-s-es1 specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:vek280_es:part0:1.1 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/vek280/es/rev_a/1.1/board.xml as part xcve2802-vsvh1760-2lp-e-s-es1 specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:vek280_es_revb:part0:1.0 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/vek280/es/rev_b/1.0/board.xml as part xcve2802-vsvh1760-2mp-e-s-es1 specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:vek280_es_revb:part0:1.1 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/vek280/es/rev_b/1.1/board.xml as part xcve2802-vsvh1760-2mp-e-s-es1 specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:vhk158_es:part0:1.0 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/vhk158/es/1.0/board.xml as part xcvh1582-vsva3697-2mp-e-s-es1 specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:vhk158_es:part0:1.1 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/vhk158/es/1.1/board.xml as part xcvh1582-vsva3697-2mp-e-s-es1 specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:zcu208ld:part0:2.0 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/zcu208ld/production/2.0/board.xml as part xczu58dr-fsvg1517-2-i specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:zcu216ld:part0:2.0 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/zcu216ld/production/2.0/board.xml as part xczu59dr-ffvf1760-2-i specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:zcu670:part0:2.0 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/zcu670/2.0/board.xml as part xczu67dr-fsve1156-2-i specified in board_part file is either invalid or not available
+WARNING: [Board 49-26] cannot add Board Part xilinx.com:zcu670ld:part0:1.0 available at /opt/Xilinx/Vivado/2023.2/data/xhub/boards/XilinxBoardStore/boards/Xilinx/zcu670ld/1.0/board.xml as part xczu57dr-fsve1156-2-i specified in board_part file is either invalid or not available
+Scanning sources...
+Finished scanning sources
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/hdl/plutosdr-fw/maia-sdr/maia-hdl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/hdl/plutosdr-fw/maia-sdr/maia-hdl/adi-hdl/library'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/opt/Xilinx/Vivado/2023.2/data/ip'.
+update_compile_order -fileset sources_1
+open_bd_design {/hdl/plutosdr-fw/maia-sdr/maia-hdl/projects/pluto/pluto.srcs/sources_1/bd/system/system.bd}
+Reading block design file </hdl/plutosdr-fw/maia-sdr/maia-hdl/projects/pluto/pluto.srcs/sources_1/bd/system/system.bd>...
+Adding component instance block -- xilinx.com:ip:processing_system7:5.5 - sys_ps7
+Adding component instance block -- xilinx.com:ip:xlconcat:2.1 - sys_concat_intc
+Adding component instance block -- xilinx.com:ip:proc_sys_reset:5.0 - sys_rstgen
+Adding component instance block -- xilinx.com:ip:xlconstant:1.1 - GND_1
+Adding component instance block -- analog.com:user:axi_ad9361:1.0 - axi_ad9361
+Adding component instance block -- maia-sdr.org:maia_sdr_default:maia_sdr:0.6.2 - maia_sdr
+Adding component instance block -- xilinx.com:ip:xlslice:1.0 - adc_i_slice
+Adding component instance block -- xilinx.com:ip:xlslice:1.0 - adc_q_slice
+Adding component instance block -- xilinx.com:ip:clk_wiz:6.0 - maia_sdr_clk
+Adding component instance block -- xilinx.com:ip:axi_interconnect:2.1 - axi_gp0_interconnect
+Adding component instance block -- xilinx.com:ip:axi_crossbar:2.1 - xbar
+Adding component instance block -- xilinx.com:ip:axi_protocol_converter:2.1 - auto_pc
+Successfully read diagram <system> from block design file </hdl/plutosdr-fw/maia-sdr/maia-hdl/projects/pluto/pluto.srcs/sources_1/bd/system/system.bd>
+exit
+INFO: [Common 17-206] Exiting Vivado at Thu Jul 24 07:58:20 2025...

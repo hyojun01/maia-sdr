@@ -199,4 +199,4 @@ set_property PACKAGE_PIN F2 [get_ports ddr_dqs_n[1]]
 
 set_false_path -from [get_pins {i_system_wrapper/system_i/axi_ad9361/inst/i_rx/i_up_adc_common/up_adc_gpio_out_int_reg[0]/C}]
 set_false_path -from [get_pins {i_system_wrapper/system_i/axi_ad9361/inst/i_tx/i_up_dac_common/up_dac_gpio_out_int_reg[0]/C}]
-
+set_false_path -from [get_pins {i_system_wrapper/system_i/maia_sdr/inst/control_registers/control/field_sdr_reset_reg/C}] -to [get_pins {i_system_wrapper/system_i/maia_sdr/inst/tx_dump/fifo/fifo18e1/RST}]

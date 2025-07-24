@@ -1,0 +1,17 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:13:54 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Thu Jul 24 07:25:16 2025
+# Process ID: 51
+# Current directory: /hdl/plutosdr-fw/maia-sdr
+# Command line: vivado
+# Log file: /hdl/plutosdr-fw/maia-sdr/vivado.log
+# Journal file: /hdl/plutosdr-fw/maia-sdr/vivado.jou
+# Running On: maia-sdr-devel, OS: Linux, CPU Frequency: 3000.000 MHz, CPU Physical cores: 16, Host memory: 15787 MB
+#-----------------------------------------------------------
+start_gui
+open_project /hdl/plutosdr-fw/maia-sdr/maia-hdl/projects/pluto/pluto.xpr
+update_compile_order -fileset sources_1
+open_bd_design {/hdl/plutosdr-fw/maia-sdr/maia-hdl/projects/pluto/pluto.srcs/sources_1/bd/system/system.bd}
