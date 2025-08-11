@@ -201,9 +201,9 @@ ad_ip_parameter axi_ad9361 CONFIG.DAC_DDS_DISABLE 1
 if {![info exists maia_iio]} {
 	ad_ip_parameter axi_ad9361 CONFIG.ADC_USERPORTS_DISABLE 1
 	ad_ip_parameter axi_ad9361 CONFIG.ADC_DCFILTER_DISABLE 1
-	ad_ip_parameter axi_ad9361 CONFIG.ADC_IQCORRECTION_DISABLE 1
+	ad_ip_parameter axi_ad9361 CONFIG.ADC_IQCORRECTION_DISABLE 0
 	ad_ip_parameter axi_ad9361 CONFIG.DAC_USERPORTS_DISABLE 1
-	ad_ip_parameter axi_ad9361 CONFIG.DAC_IQCORRECTION_DISABLE 1
+	ad_ip_parameter axi_ad9361 CONFIG.DAC_IQCORRECTION_DISABLE 0
 }
 # Maia SDR core
 
@@ -267,13 +267,14 @@ ad_connect  maia_sdr_clk/clk_out1 maia_sdr/clk
 ad_connect  maia_sdr_clk/clk_out2 maia_sdr/clk2x_clk
 ad_connect  maia_sdr_clk/clk_out3 maia_sdr/clk3x_clk
 
-# connections tx logic
+################## add loopback logic ##########################
 # ad_connect  axi_ad9361/adc_data_i0 axi_ad9361/dac_data_i0
 # ad_connect  axi_ad9361/adc_data_q0 axi_ad9361/dac_data_q0
 ad_connect maia_sdr/re_out axi_ad9361/dac_data_i0
 ad_connect maia_sdr/im_out axi_ad9361/dac_data_q0
 ad_connect axi_ad9361/dac_valid_i0 maia_sdr/valid_re
 ad_connect axi_ad9361/dac_valid_q0 maia_sdr/valid_im
+################################################################
 
 ad_connect  sys_cpu_clk maia_sdr_clk/clk_in1
 ad_connect  sys_cpu_reset maia_sdr_clk/reset
