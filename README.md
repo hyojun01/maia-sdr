@@ -92,6 +92,8 @@ iio_attr -u ip:pluto.local -d ad9361-phy ensm_mode
 
 iio_attr -c ad9361-phy altvoltage1 frequency 3500000000 
 iio_attr -o -c ad9361-phy voltage0 hardwaregain -10
+iio_attr -o -c ad9361-phy voltage rf_bandwidth 56000000
+
 
 cd /sys/bus/iio/devices/iio:device3
 cd /sys/kernel/debug/iio/iio:device3
