@@ -311,10 +311,9 @@ class MaiaSDR(Elaboratable):
 
         # delay block
         m.submodules.bram_delay = bram_delay = BRAMDelay(
-            self.iq_out_width, depth=2048, delay=5, clk_domain='sync')
+            bank_bits=5, width=32, delay=10000)
         m.d.comb += [
-            bram_delay.re_in.eq(bram_delay_re_in),
-            bram_delay.im_in.eq(bram_delay_im_in),
+            bram_delay.in_data.eq(Cat(bram_delay_re_in, bram_delay_im_in)),
             bram_delay.write_en.eq(bram_delay_write_en),
         ]
 
@@ -322,8 +321,8 @@ class MaiaSDR(Elaboratable):
         m.submodules.txiq_cdc = txiq_cdc = TxIQCDC(
             'sync', 'sampling', self.iq_out_width)
         m.d.comb += [
-            txiq_cdc.re_in.eq(bram_delay.re_out),
-            txiq_cdc.im_in.eq(bram_delay.im_out),
+            txiq_cdc.re_in.eq(bram_delay.out_data[:self.iq_out_width]),
+            txiq_cdc.im_in.eq(bram_delay.out_data[self.iq_out_width:]),
             txiq_cdc.valid_re.eq(self.valid_re),
             txiq_cdc.valid_im.eq(self.valid_im),
             bram_delay.read_en.eq(txiq_cdc.not_full),

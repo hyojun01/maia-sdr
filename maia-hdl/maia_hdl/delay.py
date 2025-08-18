@@ -1,76 +1,126 @@
 from amaranth import *
-from amaranth.sim import Simulator, Tick
 from amaranth.lib.memory import Memory
+from amaranth.sim import Simulator, Tick
 
-class BRAMDelay(Elaboratable):
-    """
-    BRAM-based circular delay line using amaranth.lib.memory.Memory.
-    """
-    def __init__(self, width : int, depth : int, delay : int, clk_domain : str):
-        assert 0 <= delay < depth
-        self.width  = width
-        self.shape = width * 2
-        self.depth  = depth
-        self.delay  = delay
-        self.clk_domain = clk_domain
+class BankedBRAM(Elaboratable):
 
-        self.re_in = Signal(width)
-        self.im_in = Signal(width)
-        self.write_en = Signal()
-        self.re_out = Signal(width)
-        self.im_out = Signal(width)
-        self.read_en = Signal()
+    def __init__(self, bank_bits, width):
+        self.row_bits   = 9                                 # 하나의 BRAM 내부 주소 비트
+        self.bank_bits  = bank_bits                         # BRAM 개수에 따른 제어 비트
+        self.addr_bits  = self.row_bits + self.bank_bits    # 전체 주소 비트
+        self.num_banks = 1 << self.bank_bits                # BRAM 개수
+        self.width = width                                  # BRAM 데이터 폭
+
+        self.w_en   = Signal()                              # 쓰기 인에이블
+        self.w_addr = Signal(self.addr_bits)                # 쓰기 주소
+        self.w_data = Signal(self.width)                    # 쓰기 데이터
+
+        self.r_en   = Signal()                              # 읽기 인에이블
+        self.r_addr = Signal(self.addr_bits)                # 읽기 주소
+        self.r_data = Signal(self.width)                    # 읽기 데이터
 
     def elaborate(self, platform):
         m = Module()
 
-        m.submodules.mem = mem = Memory(
-            shape=self.shape, depth=self.depth, init=[])
+        bank_sel_w  = Signal(self.bank_bits)                # 쓰기 제어 비트
+        row_w       = Signal(self.row_bits)                 # 쓰기 BRAM 내부 주소
+        bank_sel_r  = Signal(self.bank_bits)                # 읽기 제어 비트
+        row_r       = Signal(self.row_bits)                 # 읽기 BRAM 내부 주소
 
-        wr = mem.write_port(domain=self.clk_domain)
-        rd = mem.read_port(domain=self.clk_domain)
-
-        addr_bits = (self.depth - 1).bit_length()
-        write_ptr = Signal(addr_bits)
-
-        # write logic
         m.d.comb += [
-            wr.addr.eq(write_ptr),
-            wr.data.eq(Cat(self.re_in, self.im_in)),
-            wr.en.eq(self.write_en),
+            bank_sel_w.eq(self.w_addr[self.row_bits:]),
+            row_w.eq(self.w_addr[:self.row_bits]),
+            bank_sel_r.eq(self.r_addr[self.row_bits:]),
+            row_r.eq(self.r_addr[:self.row_bits]),
         ]
+
+        # 여러 개의 BRAM 생성
+        mems = [Memory(shape=self.width, depth=2**self.row_bits, init=[])
+                for _ in range(self.num_banks)]
+        for i, mem in enumerate(mems):
+            setattr(m.submodules, f"mem_{i}", mem)
+        
+        rdports = [mem.read_port() for mem in mems]
+        wrports = [mem.write_port() for mem in mems]
+
+        # 각 BRAM의 읽기 및 쓰기 포트 연결
+        for i in range(self.num_banks):
+            cond_w = Signal()
+            cond_r = Signal()
+
+            m.d.comb += [
+                cond_w.eq(self.w_en & (bank_sel_w == i)),   # 쓰기 인에이블 신호
+                cond_r.eq(self.r_en & (bank_sel_r == i)),   # 읽기 인에이블 신호
+
+                wrports[i].addr.eq(row_w),
+                wrports[i].data.eq(self.w_data),
+                wrports[i].en.eq(cond_w),
+
+                rdports[i].addr.eq(row_r),
+                rdports[i].en.eq(cond_r),
+            ]
+
+        rsel_q = [Signal(name=f'rsel{i}_q', reset_less=True)
+                  for i in range(self.num_banks)]
+        for i in range(self.num_banks):
+            m.d.sync += rsel_q[i].eq(rdports[i].en)
+
+        # 활성화된 BRAM 읽기 데이터 포트 연결
+        for i in range(self.num_banks):
+            with m.If(rsel_q[i]):
+                m.d.comb += self.r_data.eq(rdports[i].data)
+
+        return m
+    
+class BRAMDelay(Elaboratable):
+    def __init__(self, bank_bits=2, width=36, delay=10):
+        assert 0 < delay < (1 << bank_bits)*(2**9)
+        self.row_bits   = 9
+        self.bank_bits  = bank_bits
+        self.addr_bits  = self.row_bits + self.bank_bits
+        self.width = width
+        self.offset = delay
+
+        self.write_en   = Signal()
+        self.in_data    = Signal(self.width)
+        self.read_en    = Signal()
+        self.out_data   = Signal(self.width)
+
+    def elaborate(self, platform):
+        m = Module()
+
+        m.submodules.mem = mem = BankedBRAM(bank_bits=self.bank_bits,
+                                            width=self.width)
+
+        wptr = Signal(self.addr_bits)
+        rptr = Signal(self.addr_bits)
+
         with m.If(self.write_en):
-            m.d.sync += write_ptr.eq(write_ptr + 1)
+            m.d.sync += wptr.eq(wptr + 1)
 
-        # read pointer
-        read_addr = Signal(addr_bits)
-        if (self.depth & (self.depth - 1)) == 0:
-            mask = self.depth - 1
-            m.d.comb += read_addr.eq((write_ptr - self.delay) & mask)
-        else:
-            with m.If(write_ptr >= self.delay):
-                m.d.comb += read_addr.eq(write_ptr - self.delay)
-            with m.Else():
-                m.d.comb += read_addr.eq(write_ptr + (self.depth - self.delay))
+        # 쓰기 포인터와 읽기 포인터의 오프셋
+        m.d.comb += rptr.eq(wptr - self.offset)
 
-        m.d.sync += rd.addr.eq(read_addr)
+        m.d.comb += [
+            mem.w_en.eq(self.write_en),
+            mem.w_addr.eq(wptr),
+            mem.w_data.eq(self.in_data),
 
-        m.d.sync += [
-            self.re_out.eq(rd.data[:self.width]),
-            self.im_out.eq(rd.data[self.width:]),
-            rd.en.eq(self.read_en),
+            mem.r_en.eq(self.read_en),
+            mem.r_addr.eq(rptr),
+
+            self.out_data.eq(mem.r_data),
         ]
 
         return m
 
-
-def run_testbench(width=36, depth=1024, delay=5, total_cycles=4096):
-    dut = BRAMDelay(width=width, depth=depth, delay=delay)
+def run_testbench(bank_bits=2, width=36, delay=10, total_cycles=1024*4):
+    dut = BRAMDelay(bank_bits=bank_bits, width=width, delay=delay)
     sim = Simulator(dut)
     sim.add_clock(1e-6)
 
-    bram_read_latency = 1
-    DO_reg = 1
+    bram_read_latency = 0
+    DO_reg = 0
     effective_delay = delay + bram_read_latency + DO_reg
 
     def process():
@@ -79,12 +129,13 @@ def run_testbench(width=36, depth=1024, delay=5, total_cycles=4096):
 
         for cycle in range(total_cycles):
             val = cycle & ((1 << width) - 1)
-            yield dut.data_in.eq(val)
+            yield dut.in_data.eq(val)
             yield dut.write_en.eq(1)
+            yield dut.read_en.eq(1)
             yield Tick()
 
             written_values.append(val)
-            out = (yield dut.data_out)
+            out = (yield dut.out_data)
 
             idx = cycle - effective_delay
             if idx >= 0:
@@ -98,7 +149,7 @@ def run_testbench(width=36, depth=1024, delay=5, total_cycles=4096):
             print("TEST PASSED")
 
     sim.add_testbench(process)
-    with sim.write_vcd("bram_delay.vcd", "bram_delay.gtkw", traces=[]):
+    with sim.write_vcd("delay_new.vcd", "delay_new.gtkw", traces=[]):
         sim.run()
 
 
