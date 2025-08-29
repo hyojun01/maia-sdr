@@ -325,7 +325,8 @@ class MaiaSDR(Elaboratable):
             txiq_cdc.im_in.eq(bram_delay.out_data[self.iq_out_width:]),
             txiq_cdc.valid_re.eq(self.valid_re),
             txiq_cdc.valid_im.eq(self.valid_im),
-            bram_delay.read_en.eq(txiq_cdc.not_full),
+            bram_delay.read_en.eq(txiq_cdc.not_full & bram_delay_write_en),
+            txiq_cdc.write_en.eq(txiq_cdc.not_full & bram_delay_write_en),
             self.re_out.eq(txiq_cdc.re_out),
             self.im_out.eq(txiq_cdc.im_out),
         ]

@@ -267,6 +267,7 @@ class TxIQCDC(Elaboratable):
         self.im_in = Signal(width)
         self.reset = Signal()
         self.not_full = Signal()
+        self.write_en = Signal()
 
         # o_domain
         self.re_out = Signal(width)
@@ -292,10 +293,12 @@ class TxIQCDC(Elaboratable):
 
         m.d.comb += [
             fifo.data_in.eq(Cat(self.re_in, self.im_in)),
-            fifo.wren.eq(~reset_i & ~fifo.full),
             fifo.reset.eq(self.reset),
             self.not_full.eq(~fifo.full),
         ]
+        
+        # BRAM read port enable과 동기 필수
+        m.d.sync += fifo.wren.eq(~reset_i & self.write_en)
 
         # o_domain
         m.d.comb += [

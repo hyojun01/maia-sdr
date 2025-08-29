@@ -73,7 +73,7 @@ class BankedBRAM(Elaboratable):
         return m
     
 class BRAMDelay(Elaboratable):
-    def __init__(self, bank_bits=2, width=36, delay=10):
+    def __init__(self, bank_bits, width, delay):
         assert 0 < delay < (1 << bank_bits)*(2**9)
         self.row_bits   = 9
         self.bank_bits  = bank_bits
@@ -102,6 +102,7 @@ class BRAMDelay(Elaboratable):
         m.d.comb += rptr.eq(wptr - self.offset)
 
         m.d.comb += [
+            # RX 샘플이 주어지는 순간에 enable
             mem.w_en.eq(self.write_en),
             mem.w_addr.eq(wptr),
             mem.w_data.eq(self.in_data),

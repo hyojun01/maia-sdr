@@ -102,3 +102,7 @@ echo 0x80000418 0x02 > direct_reg_access
 cat direct_reg_access
 
 https://developer.analog.com/software/drivers/linux/ad9136
+
+set brams [get_cells -hierarchical -filter {REF_NAME == RAMB36E1}]
+report_property -all [lindex $brams 0]
+
