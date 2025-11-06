@@ -204,6 +204,22 @@ class MaiaSDR(Elaboratable):
                               1,
                               0),
                     ]),
+                0b110:Register(
+                    'tx_control', 
+                    [
+                        Field('loopback', 
+                              Access.RW, 
+                              1, 
+                              0), # 0=loopback, 1=
+                        Field('start_1sec_pulse', 
+                              Access.Wpulse, 
+                              1, 
+                              0),
+                        Field('delay_buffer', 
+                              Access.RW, 
+                              16, 
+                              16383),
+                ]),
             }, 3)
         metadata = {
             'vendor': 'Daniel Estevez',
@@ -311,7 +327,7 @@ class MaiaSDR(Elaboratable):
 
         # delay block
         m.submodules.bram_delay = bram_delay = BRAMDelay(
-            bank_bits=5, width=32, delay=10000)
+            bank_bits=5, width=32, delay_bitwidth=16)
         m.d.comb += [
             bram_delay.in_data.eq(Cat(bram_delay_re_in, bram_delay_im_in)),
             bram_delay.write_en.eq(bram_delay_write_en),
@@ -496,6 +512,8 @@ class MaiaSDR(Elaboratable):
         ################## add loopback logic #############################
         m.d.comb += txiq_cdc.reset.eq(
             self.control_registers['control']['sdr_reset'])
+        m.d.sync += bram_delay.offset.eq(
+            self.sdr_registers['tx_control']['delay_buffer'])
         ###################################################################
 
         # Interrupts (s_axi_lite domain)
